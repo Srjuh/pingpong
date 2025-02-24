@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt_br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping Pong</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #414141;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            flex-direction: column;
+        }
+
+        canvas {
+            background-color: #121212;
+            border: 2px solid #fff;
+            border-radius: 20px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .nome {
+            color: white;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            top:30px;
+            font-size: 40px;
+            text-shadow: 0 0 5px #fff;
+        }
+
+        .score {
+            position: absolute;
+            top: 120px;
+            font-size: 30px;
+            color: white;
+            text-shadow: 0 0 5px #fff;
+        }
+
+        .score span {
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .control-button {
+            background-color: #444;
+            color: #fff;
+            border: 2px solid #fff;
+            border-radius: 5px;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+        }
+
+        .control-button:hover {
+            background-color: #555;
+        }
+
+        .ball {
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1 class="nome">Ping Pong Versão Ultimate</h1>
+    </div>
+
+    <div class="score">
+        <span id="leftScore">0</span> - <span id="rightScore">0</span>
+    </div>
+
+    <canvas id="pong" width="600" height="400"></canvas>
+
+    <div class="controls">
+        <button class="control-button" id="upBtn">↑</button>
+        <button class="control-button" id="downBtn">↓</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("pong");
+        const context = canvas.getContext("2d");
+
+        let leftScore = 0;
+        let rightScore = 0;
+
+        // Criando a bola
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 10,
+            speedX: 5,
+            speedY: 5,
+            color: "#fff",
+            trail: [] // Rastro da bola
+        };
+
+        // Criando as raquetes
+        const paddleWidth = 10, paddleHeight = 100;
+        const leftPaddle = {
+            x: 0,
+            y: canvas.height / 2 - paddleHeight / 2,
+            width: paddleWidth,
+            height: paddleHeight,
+            color: "#fff",
+            speedY: 0
+        };
+        
+        const rightPaddle = {
+            x: canvas.width - paddleWidth,
+            y: canvas.height / 2 - paddleHeight / 2,
+            width: paddleWidth,
+            height: paddleHeight,
+            color: "#fff",
+            speedY: 0
+        };
+
+        // Função para desenhar o campo e os objetos
+        function draw() {
+            context.clearRect(0, 0, canvas.width, canvas.height); // Limpa a tela
+
+            // Desenha a faixa central (linha pontilhada)
+            context.strokeStyle = "#fff";
+            context.lineWidth = 2;
+            context.setLineDash([10, 10]); // Define a linha pontilhada
+            context.beginPath();
+            context.moveTo(canvas.width / 2, 0);
+            context.lineTo(canvas.width / 2, canvas.height);
+            context.stroke();
+            context.setLineDash([]); // Remove o efeito pontilhado
+            
+            // Desenha o rastro da bola
+            drawBallTrail();
+
+            // Desenha a bola
+            context.beginPath();
+            context.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2, false);
+            context.fillStyle = ball.color;
+            context.fill();
+            context.closePath();
+
+            // Desenha as raquetes
+            context.fillStyle = leftPaddle.color;
+            context.fillRect(leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height);
+
+            context.fillStyle = rightPaddle.color;
+            context.fillRect(rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height);
+
+            // Atualiza a posição da bola
+            ball.x += ball.speedX;
+            ball.y += ball.speedY;
+
+            // Verifica se a bola atingiu o topo ou a base da tela
+            if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
+                ball.speedY = -ball.speedY;
+            }
+
+            // Verifica colisão com a raquete esquerda
+            if (ball.x - ball.radius < leftPaddle.x + leftPaddle.width && ball.y > leftPaddle.y && ball.y < leftPaddle.y + leftPaddle.height) {
+                ball.speedX = -ball.speedX;
+            }
+
+            // Verifica colisão com a raquete direita
+            if (ball.x + ball.radius > rightPaddle.x && ball.y > rightPaddle.y && ball.y < rightPaddle.y + rightPaddle.height) {
+                ball.speedX = -ball.speedX;
+            }
+
+            // Verifica se a bola saiu da tela
+            if (ball.x - ball.radius < 0) {
+                rightScore++;
+                resetBall();
+            } else if (ball.x + ball.radius > canvas.width) {
+                leftScore++;
+                resetBall();
+            }
+
+            // Atualiza o placar
+            document.getElementById("leftScore").textContent = leftScore;
+            document.getElementById("rightScore").textContent = rightScore;
+        }
+
+        // Função para resetar a bola
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.speedX = -ball.speedX;
+            ball.speedY = 5;
+            ball.trail = []; // Limpa o rastro ao reiniciar
+        }
+
+        // Função para desenhar o rastro da bola
+        function drawBallTrail() {
+            // Adiciona o rastro
+            ball.trail.push({ x: ball.x, y: ball.y });
+
+            // Mantém o rastro pequeno e suave
+            if (ball.trail.length > 7) {
+                ball.trail.shift(); // Remove o rastro mais antigo
+            }
+
+            // Desenha o rastro
+            for (let i = 0; i < ball.trail.length; i++) {
+                const alpha = i / ball.trail.length; // Aumenta a transparência conforme o rastro se afasta
+                context.beginPath();
+                context.arc(ball.trail[i].x, ball.trail[i].y, ball.radius, 0, Math.PI * 2, false);
+                context.fillStyle = `rgba(255, 165, 0, ${alpha})`; // Cor e transparência do rastro
+                context.fill();
+                context.closePath();
+            }
+        }
+
+        // Funções para mover as raquetes
+        function movePaddle() {
+            if (leftPaddle.speedY !== 0) {
+                leftPaddle.y += leftPaddle.speedY;
+                if (leftPaddle.y < 0) leftPaddle.y = 0;
+                if (leftPaddle.y + leftPaddle.height > canvas.height) leftPaddle.y = canvas.height - leftPaddle.height;
+            }
+
+            // Raquete da direita se move automaticamente
+            if (ball.y < rightPaddle.y + rightPaddle.height / 2) {
+                rightPaddle.y -= 4; // Move a raquete para cima
+            } else if (ball.y > rightPaddle.y + rightPaddle.height / 2) {
+                rightPaddle.y += 4; // Move a raquete para baixo
+            }
+
+            // Limita o movimento da raquete da direita dentro da tela
+            if (rightPaddle.y < 0) rightPaddle.y = 0;
+            if (rightPaddle.y + rightPaddle.height > canvas.height) rightPaddle.y = canvas.height - rightPaddle.height;
+        }
+
+        // Controle da raquete esquerda com teclas
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowUp") leftPaddle.speedY = -5;
+            if (e.key === "ArrowDown") leftPaddle.speedY = 5;
+        });
+
+        document.addEventListener("keyup", (e) => {
+            if (e.key === "ArrowUp" || e.key === "ArrowDown") leftPaddle.speedY = 0;
+        });
+
+        // Controle da raquete esquerda com botões
+        document.getElementById("upBtn").addEventListener("click", () => {
+            leftPaddle.y -= 20;  // Move a raquete para cima por 20px
+            if (leftPaddle.y < 0) leftPaddle.y = 0;  // Não permite que saia da tela
+        });
+
+        document.getElementById("downBtn").addEventListener("click", () => {
+            leftPaddle.y += 20;  // Move a raquete para baixo por 20px
+            if (leftPaddle.y + leftPaddle.height > canvas.height) leftPaddle.y = canvas.height - leftPaddle.height;  // Não permite que saia da tela
+        });
+
+        // Loop principal do jogo
+        function gameLoop() {
+            movePaddle();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Inicia o jogo
+        gameLoop();
+    </script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "joguin",
+  "version": "1.0.0",
+  "description": "Joguinho de Ping Pong",
+  "keywords": [
+    "pingpong",
+    "jogo"
+  ],
+  "homepage": "https://github.com/Srjuh/pingpong#readme",
+  "bugs": {
+    "url": "https://github.com/Srjuh/pingpong/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Srjuh/pingpong.git"
+  },
+  "license": "ISC",
+  "author": "Sergio Neto",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
