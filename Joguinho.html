@@ -272,6 +272,7 @@
         // Funções para controlar a raquete esquerda
         let moveUp = false, moveDown = false;
 
+        // Eventos de clique e toque para dispositivos móveis e desktop
         document.getElementById("upBtn").addEventListener("mousedown", function() {
             moveUp = true;
         });
@@ -285,6 +286,23 @@
         });
 
         document.getElementById("downBtn").addEventListener("mouseup", function() {
+            moveDown = false;
+        });
+
+        // Eventos de toque para dispositivos móveis
+        document.getElementById("upBtn").addEventListener("touchstart", function(e) {
+            moveUp = true;
+        });
+
+        document.getElementById("upBtn").addEventListener("touchend", function(e) {
+            moveUp = false;
+        });
+
+        document.getElementById("downBtn").addEventListener("touchstart", function(e) {
+            moveDown = true;
+        });
+
+        document.getElementById("downBtn").addEventListener("touchend", function(e) {
             moveDown = false;
         });
 
