@@ -19,6 +19,7 @@
             height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             flex-direction: column;
+            overflow: hidden;
         }
 
         canvas {
@@ -26,15 +27,17 @@
             border: 2px solid #fff;
             border-radius: 20px;
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            width: 90%;
+            max-width: 600px;
+            height: auto;
         }
 
         .nome {
             color: white;
             position: absolute;
-            top: 0;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            top:30px;
             font-size: 40px;
             text-shadow: 0 0 5px #fff;
         }
@@ -55,6 +58,7 @@
             display: flex;
             margin-top: 20px;
             justify-content: center;
+            width: 100%;
         }
 
         .control-button {
@@ -76,8 +80,44 @@
             background-color: #555;
         }
 
-        .ball {
-            border-radius: 50%;
+        @media (max-width: 600px) {
+            .nome {
+                font-size: 30px;
+                top: 10px;
+            }
+
+            .score {
+                top: 90px;
+                font-size: 24px;
+            }
+
+            .control-button {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            canvas {
+                width: 80%;
+                height: auto;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .control-button {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .nome {
+                font-size: 25px;
+            }
         }
     </style>
 </head>
@@ -104,7 +144,6 @@
         let leftScore = 0;
         let rightScore = 0;
 
-        // Criando a bola
         const ball = {
             x: canvas.width / 2,
             y: canvas.height / 2,
@@ -112,10 +151,9 @@
             speedX: 5,
             speedY: 5,
             color: "#fff",
-            trail: [] // Rastro da bola
+            trail: []
         };
 
-        // Criando as raquetes
         const paddleWidth = 10, paddleHeight = 100;
         const leftPaddle = {
             x: 0,
@@ -125,7 +163,7 @@
             color: "#fff",
             speedY: 0
         };
-        
+
         const rightPaddle = {
             x: canvas.width - paddleWidth,
             y: canvas.height / 2 - paddleHeight / 2,
@@ -135,57 +173,47 @@
             speedY: 0
         };
 
-        // Função para desenhar o campo e os objetos
         function draw() {
-            context.clearRect(0, 0, canvas.width, canvas.height); // Limpa a tela
+            context.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Desenha a faixa central (linha pontilhada)
             context.strokeStyle = "#fff";
             context.lineWidth = 2;
-            context.setLineDash([10, 10]); // Define a linha pontilhada
+            context.setLineDash([10, 10]);
             context.beginPath();
             context.moveTo(canvas.width / 2, 0);
             context.lineTo(canvas.width / 2, canvas.height);
             context.stroke();
-            context.setLineDash([]); // Remove o efeito pontilhado
-            
-            // Desenha o rastro da bola
+            context.setLineDash([]);
+
             drawBallTrail();
 
-            // Desenha a bola
             context.beginPath();
             context.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2, false);
             context.fillStyle = ball.color;
             context.fill();
             context.closePath();
 
-            // Desenha as raquetes
             context.fillStyle = leftPaddle.color;
             context.fillRect(leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height);
 
             context.fillStyle = rightPaddle.color;
             context.fillRect(rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height);
 
-            // Atualiza a posição da bola
             ball.x += ball.speedX;
             ball.y += ball.speedY;
 
-            // Verifica se a bola atingiu o topo ou a base da tela
             if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
                 ball.speedY = -ball.speedY;
             }
 
-            // Verifica colisão com a raquete esquerda
             if (ball.x - ball.radius < leftPaddle.x + leftPaddle.width && ball.y > leftPaddle.y && ball.y < leftPaddle.y + leftPaddle.height) {
                 ball.speedX = -ball.speedX;
             }
 
-            // Verifica colisão com a raquete direita
             if (ball.x + ball.radius > rightPaddle.x && ball.y > rightPaddle.y && ball.y < rightPaddle.y + rightPaddle.height) {
                 ball.speedX = -ball.speedX;
             }
 
-            // Verifica se a bola saiu da tela
             if (ball.x - ball.radius < 0) {
                 rightScore++;
                 resetBall();
@@ -194,42 +222,35 @@
                 resetBall();
             }
 
-            // Atualiza o placar
             document.getElementById("leftScore").textContent = leftScore;
             document.getElementById("rightScore").textContent = rightScore;
         }
 
-        // Função para resetar a bola
         function resetBall() {
             ball.x = canvas.width / 2;
             ball.y = canvas.height / 2;
             ball.speedX = -ball.speedX;
             ball.speedY = 5;
-            ball.trail = []; // Limpa o rastro ao reiniciar
+            ball.trail = [];
         }
 
-        // Função para desenhar o rastro da bola
         function drawBallTrail() {
-            // Adiciona o rastro
             ball.trail.push({ x: ball.x, y: ball.y });
 
-            // Mantém o rastro pequeno e suave
             if (ball.trail.length > 7) {
-                ball.trail.shift(); // Remove o rastro mais antigo
+                ball.trail.shift();
             }
 
-            // Desenha o rastro
             for (let i = 0; i < ball.trail.length; i++) {
-                const alpha = i / ball.trail.length; // Aumenta a transparência conforme o rastro se afasta
+                const alpha = i / ball.trail.length;
                 context.beginPath();
                 context.arc(ball.trail[i].x, ball.trail[i].y, ball.radius, 0, Math.PI * 2, false);
-                context.fillStyle = `rgba(255, 165, 0, ${alpha})`; // Cor e transparência do rastro
+                context.fillStyle = `rgba(255, 165, 0, ${alpha})`;
                 context.fill();
                 context.closePath();
             }
         }
 
-        // Funções para mover as raquetes
         function movePaddle() {
             if (leftPaddle.speedY !== 0) {
                 leftPaddle.y += leftPaddle.speedY;
@@ -237,48 +258,51 @@
                 if (leftPaddle.y + leftPaddle.height > canvas.height) leftPaddle.y = canvas.height - leftPaddle.height;
             }
 
-            // Raquete da direita se move automaticamente
-            if (ball.y < rightPaddle.y + rightPaddle.height / 2) {
-                rightPaddle.y -= 4; // Move a raquete para cima
-            } else if (ball.y > rightPaddle.y + rightPaddle.height / 2) {
-                rightPaddle.y += 4; // Move a raquete para baixo
+            // A raquete da direita segue a bola
+            if (rightPaddle.y + rightPaddle.height / 2 < ball.y) {
+                rightPaddle.y += 4; // Velocidade de movimento da raquete da direita
+            } else if (rightPaddle.y + rightPaddle.height / 2 > ball.y) {
+                rightPaddle.y -= 4;
             }
 
-            // Limita o movimento da raquete da direita dentro da tela
             if (rightPaddle.y < 0) rightPaddle.y = 0;
             if (rightPaddle.y + rightPaddle.height > canvas.height) rightPaddle.y = canvas.height - rightPaddle.height;
         }
 
-        // Controle da raquete esquerda com teclas
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowUp") leftPaddle.speedY = -5;
-            if (e.key === "ArrowDown") leftPaddle.speedY = 5;
+        // Funções para controlar a raquete esquerda
+        let moveUp = false, moveDown = false;
+
+        document.getElementById("upBtn").addEventListener("mousedown", function() {
+            moveUp = true;
         });
 
-        document.addEventListener("keyup", (e) => {
-            if (e.key === "ArrowUp" || e.key === "ArrowDown") leftPaddle.speedY = 0;
+        document.getElementById("upBtn").addEventListener("mouseup", function() {
+            moveUp = false;
         });
 
-        // Controle da raquete esquerda com botões
-        document.getElementById("upBtn").addEventListener("click", () => {
-            leftPaddle.y -= 20;  // Move a raquete para cima por 20px
-            if (leftPaddle.y < 0) leftPaddle.y = 0;  // Não permite que saia da tela
+        document.getElementById("downBtn").addEventListener("mousedown", function() {
+            moveDown = true;
         });
 
-        document.getElementById("downBtn").addEventListener("click", () => {
-            leftPaddle.y += 20;  // Move a raquete para baixo por 20px
-            if (leftPaddle.y + leftPaddle.height > canvas.height) leftPaddle.y = canvas.height - leftPaddle.height;  // Não permite que saia da tela
+        document.getElementById("downBtn").addEventListener("mouseup", function() {
+            moveDown = false;
         });
 
-        // Loop principal do jogo
-        function gameLoop() {
+        function update() {
+            if (moveUp) {
+                leftPaddle.speedY = -8;
+            } else if (moveDown) {
+                leftPaddle.speedY = 8;
+            } else {
+                leftPaddle.speedY = 0;
+            }
+
             movePaddle();
             draw();
-            requestAnimationFrame(gameLoop);
+            requestAnimationFrame(update);
         }
 
-        // Inicia o jogo
-        gameLoop();
+        update();
     </script>
 </body>
 </html>
